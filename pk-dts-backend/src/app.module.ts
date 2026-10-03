@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, Logger } from "@nestjs/common";
 import { CacheModule } from "@nestjs/cache-manager";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
@@ -34,6 +34,8 @@ import { UserAwareCacheInterceptor } from "./common/cache/user-aware-cache.inter
 import { resolveEnvFilePaths } from "./config/env-files";
 import { PrismaModule } from "./core/prisma/prisma.module";
 
+const cacheLogger = new Logger("Cache");
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -51,14 +53,39 @@ import { PrismaModule } from "./core/prisma/prisma.module";
           config.get<string>("CACHE_TTL_MS"),
           15_000,
         );
+        const max = positiveInteger(
+          config.get<string>("CACHE_MAX_ITEMS"),
+          500,
+        );
+        const cacheDriver = config
+          .get<string>("CACHE_DRIVER", "memory")
+          .trim()
+          .toLowerCase();
 
-        return {
-          store: await redisStore({
-            url: config.get<string>("REDIS_URL", "redis://redis:6379"),
+        if (cacheDriver !== "redis") {
+          cacheLogger.log("Using in-memory cache (Redis is optional).");
+          return { ttl, max };
+        }
+
+        try {
+          const store = await redisStore({
+            url: config.get<string>(
+              "REDIS_URL",
+              "redis://127.0.0.1:6379",
+            ),
             ttl,
-          }),
-          ttl,
-        };
+          });
+
+          cacheLogger.log("Using Redis cache.");
+          return { store, ttl };
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : String(error);
+          cacheLogger.warn(
+            `Redis cache unavailable; falling back to in-memory cache: ${message}`,
+          );
+          return { ttl, max };
+        }
       },
     }),
     ThrottlerModule.forRootAsync({
