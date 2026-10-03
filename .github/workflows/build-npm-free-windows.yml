@@ -31,18 +31,24 @@ jobs:
         working-directory: pk-dts-backend
         shell: cmd
         run: |
-          npm.cmd ci
-          npm.cmd run prisma:generate:dockerless
-          npm.cmd run build
-          npm.cmd test
+          call npm.cmd ci
+          if errorlevel 1 exit /b 1
+          call npm.cmd run prisma:generate:dockerless
+          if errorlevel 1 exit /b 1
+          call npm.cmd run build
+          if errorlevel 1 exit /b 1
+          call npm.cmd test
+          if errorlevel 1 exit /b 1
 
       - name: Install and build frontend
         working-directory: pk-dts-frontend
         shell: cmd
         run: |
-          npm.cmd install --no-audit --no-fund
+          call npm.cmd install --no-audit --no-fund
+          if errorlevel 1 exit /b 1
           set BACKEND_API_BASE_URL=http://localhost:3000/api/v1
-          npm.cmd run build
+          call npm.cmd run build
+          if errorlevel 1 exit /b 1
 
       - name: Assemble portable bundle
         shell: pwsh
@@ -84,6 +90,9 @@ jobs:
           Copy-Item -Force 'docs/npm-free-windows.md' (Join-Path $bundle 'README-NPM-FREE.md')
 
           & (Join-Path $runtime 'node.exe') --version
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Portable Node runtime check failed.'
+          }
           if (-not (Test-Path (Join-Path $backend 'dist/main.js'))) {
             throw 'Compiled backend main.js is missing.'
           }
