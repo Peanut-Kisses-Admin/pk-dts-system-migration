@@ -895,7 +895,7 @@ export class DocumentsService {
                     is: {
                       document_number: {
                         contains: term,
-                        mode: "insensitive" as const,
+                       
                       },
                     },
                   },
@@ -903,7 +903,7 @@ export class DocumentsService {
                 {
                   document_title: {
                     contains: term,
-                    mode: "insensitive" as const,
+                  
                   },
                 },
                 {
@@ -913,7 +913,7 @@ export class DocumentsService {
                         is: {
                           area_name: {
                             contains: term,
-                            mode: "insensitive" as const,
+                          
                           },
                         },
                       },
@@ -927,7 +927,7 @@ export class DocumentsService {
                         is: {
                           location_name: {
                             contains: term,
-                            mode: "insensitive" as const,
+                         
                           },
                         },
                       },
@@ -941,7 +941,7 @@ export class DocumentsService {
                         is: {
                           asset_number: {
                             contains: term,
-                            mode: "insensitive" as const,
+                          
                           },
                         },
                       },
@@ -955,7 +955,7 @@ export class DocumentsService {
                         is: {
                           category_name: {
                             contains: term,
-                            mode: "insensitive" as const,
+                          
                           },
                         },
                       },
@@ -969,7 +969,7 @@ export class DocumentsService {
                         is: {
                           file_name: {
                             contains: term,
-                            mode: "insensitive" as const,
+                          
                           },
                         },
                       },
