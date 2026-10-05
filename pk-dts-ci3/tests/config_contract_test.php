@@ -53,4 +53,17 @@ contract_assert(array_key_exists('password', $db['default']) && $db['default']['
 contract_assert(($route['default_controller'] ?? null) === 'home', 'default route should be home');
 contract_assert(!in_array('database', $autoload['libraries'] ?? [], true), 'database must not be globally autoloaded');
 
+$requiredApplicationFiles = array(
+    $root . '/application/controllers/Home.php',
+    $root . '/application/core/MY_Controller.php',
+    $root . '/application/core/MY_Model.php',
+    $root . '/application/views/migration/home.php',
+);
+foreach ($requiredApplicationFiles as $file) {
+    contract_assert(is_file($file), 'required application file missing: ' . $file);
+}
+$homeSource = file_get_contents($root . '/application/controllers/Home.php');
+contract_assert($homeSource !== false, 'Home controller should be readable');
+contract_assert(strpos($homeSource, 'load->database') === false, 'Home controller must not load the database');
+
 echo "PASS config_contract_test\n";
