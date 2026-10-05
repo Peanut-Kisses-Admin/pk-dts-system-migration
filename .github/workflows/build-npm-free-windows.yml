@@ -1,0 +1,110 @@
+name: Build npm-free Windows bundle
+
+on:
+  push:
+    branches:
+      - feature/npm-free-windows
+  workflow_dispatch:
+
+jobs:
+  build-windows-bundle:
+    runs-on: windows-latest
+    env:
+      APP_ENV: dockerless
+      NODE_ENV: development
+      PRISMA_SCHEMA_PATH: prisma/schema.postgresql.prisma
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/document_tracking?schema=public
+      CACHE_DRIVER: memory
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            pk-dts-backend/package-lock.json
+            pk-dts-frontend/package-lock.json
+
+      - name: Install and verify backend
+        working-directory: pk-dts-backend
+        shell: cmd
+        run: |
+          call npm.cmd ci
+          if errorlevel 1 exit /b 1
+          call npm.cmd run prisma:generate:dockerless
+          if errorlevel 1 exit /b 1
+          call npm.cmd run build
+          if errorlevel 1 exit /b 1
+          call npm.cmd test
+          if errorlevel 1 exit /b 1
+
+      - name: Install and build frontend
+        working-directory: pk-dts-frontend
+        shell: cmd
+        run: |
+          call npm.cmd install --no-audit --no-fund
+          if errorlevel 1 exit /b 1
+          set BACKEND_API_BASE_URL=http://localhost:3000/api/v1
+          call npm.cmd run build
+          if errorlevel 1 exit /b 1
+
+      - name: Assemble portable bundle
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $bundle = Join-Path $PWD 'bundle'
+          $backend = Join-Path $bundle 'backend'
+          $frontend = Join-Path $bundle 'frontend'
+          $runtime = Join-Path $bundle 'runtime'
+          $tools = Join-Path $bundle 'tools'
+
+          New-Item -ItemType Directory -Force -Path $backend, $frontend, $runtime, $tools | Out-Null
+
+          Copy-Item -Recurse -Force 'pk-dts-backend/dist' $backend
+          Copy-Item -Recurse -Force 'pk-dts-backend/node_modules' $backend
+          Copy-Item -Recurse -Force 'pk-dts-backend/prisma' $backend
+          Copy-Item -Recurse -Force 'pk-dts-backend/scripts' $backend
+          Copy-Item -Force 'pk-dts-backend/package.json' $backend
+          Copy-Item -Force 'pk-dts-backend/.env.dockerless.example' $backend
+
+          $frontendBuild = 'pk-dts-frontend/dist/sakai-ng/browser'
+          if (-not (Test-Path $frontendBuild)) {
+            $frontendBuild = 'pk-dts-frontend/dist/sakai-ng'
+          }
+          if (-not (Test-Path (Join-Path $frontendBuild 'index.html'))) {
+            throw "Angular build output does not contain index.html: $frontendBuild"
+          }
+          Copy-Item -Recurse -Force (Join-Path $frontendBuild '*') $frontend
+
+          $nodeExe = (Get-Command node.exe).Source
+          Copy-Item -Force $nodeExe (Join-Path $runtime 'node.exe')
+
+          Copy-Item -Force 'portable/static-server.js' $tools
+          Copy-Item -Force 'portable/run-backend.cmd' $tools
+          Copy-Item -Force 'portable/run-frontend.cmd' $tools
+          Copy-Item -Force 'portable/diagnose-npm.cmd' $bundle
+          Copy-Item -Force 'portable/start-dts.cmd' $bundle
+          Copy-Item -Force 'portable/setup-database.cmd' $bundle
+          Copy-Item -Force 'docs/npm-free-windows.md' (Join-Path $bundle 'README-NPM-FREE.md')
+
+          & (Join-Path $runtime 'node.exe') --version
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Portable Node runtime check failed.'
+          }
+          if (-not (Test-Path (Join-Path $backend 'dist/main.js'))) {
+            throw 'Compiled backend main.js is missing.'
+          }
+          if (-not (Test-Path (Join-Path $frontend 'index.html'))) {
+            throw 'Compiled frontend index.html is missing.'
+          }
+
+      - name: Upload ready-to-run Windows bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: pk-dts-windows-npm-free
+          path: bundle
+          if-no-files-found: error
+          compression-level: 6
+          retention-days: 30
