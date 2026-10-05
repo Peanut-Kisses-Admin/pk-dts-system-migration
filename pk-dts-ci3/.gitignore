@@ -1,0 +1,13 @@
+.env
+vendor/
+system/*
+!system/.gitkeep
+application/cache/*
+!application/cache/.gitkeep
+!application/cache/sessions/
+application/cache/sessions/*
+!application/cache/sessions/.gitkeep
+application/logs/*
+!application/logs/.gitkeep
+uploads/*
+!uploads/.gitkeep
