@@ -1039,14 +1039,14 @@ export class DocumentsService {
             AND: [
               {
                 OR: [
-                  { disposed_by_name: { contains: query.disposed_by.trim(), mode: "insensitive" } },
+                  { disposed_by_name: { contains: query.disposed_by.trim() } },
                   {
                     disposer: {
                       is: {
                         OR: [
-                          { firstname: { contains: query.disposed_by.trim(), mode: "insensitive" } },
-                          { lastname: { contains: query.disposed_by.trim(), mode: "insensitive" } },
-                          { username: { contains: query.disposed_by.trim(), mode: "insensitive" } },
+                          { firstname: { contains: query.disposed_by.trim() }},
+                          { lastname: { contains: query.disposed_by.trim()} },
+                          { username: { contains: query.disposed_by.trim()}},
                         ],
                       },
                     },
@@ -1075,18 +1075,18 @@ export class DocumentsService {
       ...(search
         ? {
             OR: [
-              { document_title: { contains: search, mode: "insensitive" } },
-              { requested_by_name: { contains: search, mode: "insensitive" } },
-              { disposal_remarks: { contains: search, mode: "insensitive" } },
-              { disposal_action_other: { contains: search, mode: "insensitive" } },
-              { disposed_by_name: { contains: search, mode: "insensitive" } },
+              { document_title: { contains: search, } },
+              { requested_by_name: { contains: search, } },
+              { disposal_remarks: { contains: search,  } },
+              { disposal_action_other: { contains: search,  } },
+              { disposed_by_name: { contains: search,  } },
               {
                 creator: {
                   is: {
                     OR: [
-                      { firstname: { contains: search, mode: "insensitive" } },
-                      { lastname: { contains: search, mode: "insensitive" } },
-                      { username: { contains: search, mode: "insensitive" } },
+                      { firstname: { contains: search }},
+                      { lastname: { contains: search}},
+                      { username: { contains: search  } },
                     ],
                   },
                 },
@@ -1095,11 +1095,11 @@ export class DocumentsService {
                 hardcopy: {
                   is: {
                     OR: [
-                      { asset: { is: { asset_number: { contains: search, mode: "insensitive" } } } },
-                      { area: { is: { area_name: { contains: search, mode: "insensitive" } } } },
-                      { specific: { is: { specific_name: { contains: search, mode: "insensitive" } } } },
-                      { location: { is: { location_name: { contains: search, mode: "insensitive" } } } },
-                      { sequence: { is: { sequence_code: { contains: search, mode: "insensitive" } } } },
+                      { asset: { is: { asset_number: { contains: search,} } } },
+                      { area: { is: { area_name: { contains: search,  } } } },
+                      { specific: { is: { specific_name: { contains: search, } } } },
+                      { location: { is: { location_name: { contains: search, } } } },
+                      { sequence: { is: { sequence_code: { contains: search, } } } },
                     ],
                   },
                 },
@@ -1108,10 +1108,10 @@ export class DocumentsService {
                 softcopy: {
                   is: {
                     OR: [
-                      { document_number: { contains: search, mode: "insensitive" } },
-                      { category: { is: { category_name: { contains: search, mode: "insensitive" } } } },
-                      { category: { is: { folder_name: { contains: search, mode: "insensitive" } } } },
-                      { current_revision: { is: { file_name: { contains: search, mode: "insensitive" } } } },
+                      { document_number: { contains: search,  } },
+                      { category: { is: { category_name: { contains: search,} } } },
+                      { category: { is: { folder_name: { contains: search, } } } },
+                      { current_revision: { is: { file_name: { contains: search,  } } } },
                     ],
                   },
                 },

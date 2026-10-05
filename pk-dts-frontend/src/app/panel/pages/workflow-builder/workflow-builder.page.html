@@ -181,7 +181,7 @@
                             <article
                                 *ngFor="let node of approvalNodes; let index = index; trackBy: trackNode"
                                 class="step-card"
-                                [class.incomplete]="!node.label?.trim() || !node.assignment || (node.assignment.type === 'USER' && !node.assignment.user_id) || (node.assignment.type === 'ROLE' && !node.assignment.role_id)"
+                             [class.incomplete]="!node.label.trim() || !node.assignment || (node.assignment.type === 'USER' && !node.assignment.user_id) || (node.assignment.type === 'ROLE' && !node.assignment.role_id)"
                                 [attr.draggable]="editable ? 'true' : null"
                                 (dragstart)="dragStart(index)"
                                 (dragover)="$event.preventDefault()"
