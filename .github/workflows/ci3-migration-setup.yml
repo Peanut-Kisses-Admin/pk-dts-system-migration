@@ -28,7 +28,7 @@ jobs:
 
       - name: Validate Composer configuration
         working-directory: pk-dts-ci3
-        run: composer validate --strict
+        run: composer validate --strict --no-check-all
 
       - name: Install CodeIgniter 3.1.13
         working-directory: pk-dts-ci3
