@@ -1,0 +1,20 @@
+{
+  "name": "curibtech/pk-dts-ci3",
+  "description": "CodeIgniter 3 migration foundation for PK DTS",
+  "type": "project",
+  "require": {
+    "php": ">=7.4",
+    "codeigniter/framework": "3.1.13"
+  },
+  "scripts": {
+    "post-install-cmd": [
+      "@php tools/sync-ci3-system.php"
+    ],
+    "post-update-cmd": [
+      "@php tools/sync-ci3-system.php"
+    ]
+  },
+  "config": {
+    "sort-packages": true
+  }
+}
