@@ -1,6 +1,7 @@
 {
   "name": "curibtech/pk-dts-ci3",
   "description": "CodeIgniter 3 migration foundation for PK DTS",
+  "license": "MIT",
   "type": "project",
   "require": {
     "php": ">=7.4",
