@@ -8,6 +8,8 @@
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" \"prisma/**/*.prisma\"",
     "start": "node scripts/run-app.js development start",
     "start:dev": "node scripts/run-app.js development watch",
+    "start:dockerless": "node scripts/run-app.js dockerless watch",
+    "start:dockerless:once": "node scripts/run-app.js dockerless start",
     "start:test:app": "node scripts/run-app.js test start",
     "start:prod": "node scripts/run-app.js production prod",
     "test": "jest --runInBand",
@@ -16,6 +18,7 @@
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "prisma:generate": "node scripts/prisma-env.js generate",
     "prisma:generate:dev": "node scripts/prisma-env.js --app-env development generate",
+    "prisma:generate:dockerless": "node scripts/prisma-env.js --app-env dockerless generate",
     "prisma:generate:test": "node scripts/prisma-env.js --app-env test generate",
     "prisma:generate:prod": "node scripts/prisma-env.js --app-env production generate",
     "prisma:migrate": "node scripts/prisma-env.js migrate dev",
@@ -23,9 +26,11 @@
     "prisma:migrate:prod": "node scripts/prisma-env.js --app-env production migrate deploy",
     "prisma:push": "node scripts/prisma-env.js db push",
     "prisma:push:dev": "node scripts/prisma-env.js --app-env development db push",
+    "prisma:push:dockerless": "node scripts/prisma-env.js --app-env dockerless db push",
     "prisma:push:test": "node scripts/prisma-env.js --app-env test db push",
     "prisma:seed": "ts-node prisma/seed.ts",
-    "prisma:studio": "node scripts/prisma-env.js studio"
+    "prisma:studio": "node scripts/prisma-env.js studio",
+    "setup:dockerless": "node scripts/setup-dockerless.js"
   },
   "dependencies": {
     "@nestjs/cache-manager": "^2.3.0",
