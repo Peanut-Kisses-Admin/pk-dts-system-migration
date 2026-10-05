@@ -1,0 +1,74 @@
+name: CI3 Migration Setup Verification
+
+on:
+  push:
+    branches:
+      - migration/codeigniter3
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 7.4 and Composer
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          tools: composer:v2
+          coverage: none
+
+      - name: Run PHP contract tests
+        run: |
+          php pk-dts-ci3/tests/env_loader_test.php
+          php pk-dts-ci3/tests/config_contract_test.php
+
+      - name: Validate Composer configuration
+        working-directory: pk-dts-ci3
+        run: composer validate --strict
+
+      - name: Install CodeIgniter 3.1.13
+        working-directory: pk-dts-ci3
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Verify framework and PHP syntax
+        run: |
+          test -f pk-dts-ci3/system/core/CodeIgniter.php
+          grep -Eq "CI_VERSION.*3\.1\.13" pk-dts-ci3/system/core/CodeIgniter.php
+          find pk-dts-ci3/application pk-dts-ci3/bootstrap pk-dts-ci3/tools pk-dts-ci3/tests -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Verify HTTP boot without PostgreSQL
+        shell: bash
+        run: |
+          cd pk-dts-ci3
+          APP_ENV=production APP_URL=http://127.0.0.1:8080 php -S 127.0.0.1:8080 index.php >/tmp/pk-dts-ci3-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+
+          ready=0
+          for attempt in {1..20}; do
+            if curl -fsS http://127.0.0.1:8080/ >/tmp/pk-dts-ci3-root.html; then
+              ready=1
+              break
+            fi
+            sleep 0.5
+          done
+
+          if [ "$ready" -ne 1 ]; then
+            cat /tmp/pk-dts-ci3-server.log
+            exit 1
+          fi
+
+          grep -q 'PK DTS' /tmp/pk-dts-ci3-root.html
+          grep -q 'CodeIgniter 3 migration foundation is active' /tmp/pk-dts-ci3-root.html
+
+          status=$(curl -sS -o /tmp/pk-dts-ci3-404.html -w '%{http_code}' http://127.0.0.1:8080/route-that-does-not-exist)
+          test "$status" = '404'
+
+          if grep -Eiq 'DB_PASSWORD|dts_user|stack trace|Fatal error' /tmp/pk-dts-ci3-root.html /tmp/pk-dts-ci3-404.html; then
+            echo 'Sensitive or diagnostic content leaked into HTTP output.'
+            exit 1
+          fi
