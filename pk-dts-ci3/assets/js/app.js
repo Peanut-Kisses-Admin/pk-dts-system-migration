@@ -1,4 +1,6 @@
-(() => {
-  const shell = document.querySelector('[data-ci3-status]');
-  if (shell) shell.dataset.ci3Status = 'verified';
-})();
+document.addEventListener('click', function (event) {
+  const element = event.target.closest('[data-confirm]');
+  if (element && !window.confirm(element.getAttribute('data-confirm'))) {
+    event.preventDefault();
+  }
+});
