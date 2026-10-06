@@ -1,0 +1,1 @@
+<section><h1><?= dts_escape($permission['permission_name']) ?></h1><p><?= dts_escape($permission['description'] ?? '') ?></p><p><?= dts_escape($permission['module_label'].' · '.$permission['action_label']) ?></p><h2>Assigned roles</h2><ul><?php foreach (($permission['roles'] ?? array()) as $role): ?><li><?= dts_escape($role['role_name']) ?></li><?php endforeach; ?></ul></section>
