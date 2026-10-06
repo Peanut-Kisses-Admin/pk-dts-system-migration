@@ -1,0 +1,1 @@
+<section><h1><?= dts_escape($pageTitle) ?></h1><dl class="detail-grid"><?php foreach($row as $key=>$value):if(is_array($value))continue;?><dt><?= dts_escape(ucwords(str_replace('_',' ',$key))) ?></dt><dd><?= dts_escape(is_bool($value)?($value?'Yes':'No'):($value===null?'—':$value)) ?></dd><?php endforeach;?></dl></section>
